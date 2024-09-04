@@ -58,7 +58,7 @@ export default function Home() {
           in the meal description.
         2.Here is my exact formatting I want you to fololow.
         2.1 I want everything to be left aligned 
-        2.2 H2 title with the name of the dish that is centered
+        2.2 H2 title that has the name of the dish only
         2.3 regular text with a description of the dish
         2.4 H3 text saying "Ingredients"
         2.5 bullet point list of ingrediants with the appropriate measurements
