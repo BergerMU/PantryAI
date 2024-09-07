@@ -1,15 +1,16 @@
 'use client'
-import {useState, useEffect} from 'react'
-import {firestore} from '@/firebase'
-import {Box, Button, Modal, Stack, ThemeProvider, TextField, createTheme, Typography} from '@mui/material'
-import {collection, doc, updateDoc, deleteDoc, getDoc, getDocs, query, setDoc} from 'firebase/firestore'
-import {GoogleGenerativeAI} from "@google/generative-ai"
+import { useState, useEffect } from 'react'
+import { firestore } from '@/firebase'
+import { Box, Button, Modal, Stack, ThemeProvider, TextField, createTheme, Typography } from '@mui/material'
+import { collection, doc, updateDoc, deleteDoc, getDoc, getDocs, query, setDoc } from 'firebase/firestore'
+import { GoogleGenerativeAI } from "@google/generative-ai"
 import ReactMarkdown from 'react-markdown'
 
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_AI_API)
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
 export default function Home() {
+  //Initializing variables
   const [Inventory, setInventory] = useState([])
   const [itemName, setItemName] = useState('')
   const [itemQuantity, setItemQuantity] = useState('')
@@ -22,7 +23,10 @@ export default function Home() {
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedItem, setSelectedItem] = useState(null)
 
+  //Helper update inventory function
   const updateInventory = async () => {
+
+    //Gets the items in the from the database and puts each item into a list
     const snapshot = query(collection(firestore, 'Inventory'))
     const docs = await getDocs(snapshot)
     const InventoryList = []
@@ -35,11 +39,16 @@ export default function Home() {
     setInventory(InventoryList)
   }
 
+  // Creates filtered inventory that's used when the user is searching for an item
   const filteredInventory = Inventory.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
+  // Generates recipes
   const generateRecipes = async () => {
-    const pantryString = Inventory.map(({name, quantity, measurement}) => `${name} ${quantity} ${measurement}`).join(', ')
+    // Creates string of the inventory that the AI can easily understand
+    const pantryString = Inventory.map(({ name, quantity, measurement }) => `${name} ${quantity} ${measurement}`).join(', ')
+
+    //Detailed prompt along with the items we have in our inventory, along with the type of meal we want to make.
     const prompt = `Here's a list of items I have in my pantry: ${pantryString}.
         Here are a couple of rules I need you to follow exactly.
         1. Here is how I want you to generate these meals
@@ -71,6 +80,7 @@ export default function Home() {
           assume what would be the most common type of measurement for that type and amount of item.
         6. Also make sure that the portion of ingrediants are appropiate, you don't have to use all of one item if the recipe doesn't need it.`
 
+    //Error handling
     try {
       const result = await model.generateContent(prompt);
       if (result.response && result.response.text) {
@@ -85,8 +95,8 @@ export default function Home() {
       return ''
     }
   }
-        
 
+  //Ensures to split up the generated recipe into parts after each "---"
   const handleGenerateRecipes = async () => {
     const result = await generateRecipes(Inventory, mealDescription)
     const recipesArray = result.split("---")
@@ -94,7 +104,9 @@ export default function Home() {
     setRecipes(uniqueRecipes)
   }
 
+  //Saves item in database
   const handleSaveItem = async () => {
+    // Error handling
     if (!itemName || !itemQuantity) {
       console.log("Error: Not all fields are filled")
       return
@@ -107,9 +119,11 @@ export default function Home() {
       return
     }
 
+    //Gathers info from database
     const measurement = itemMeasurement || ''
     const docRef = doc(collection(firestore, "Inventory"), itemName)
-    
+
+    //Allows for user to edit an item already in the database
     if (isEditMode && selectedItem) {
       await updateDoc(docRef, {
         name: itemName,
@@ -134,6 +148,8 @@ export default function Home() {
         await setDoc(docRef, newItem)
       }
     }
+
+    //Defaults for item
     setItemName('')
     setItemQuantity('')
     setItemMeasurement('')
@@ -143,28 +159,33 @@ export default function Home() {
     handleClose()
   }
 
+  //Update item quantity
   const handleUpdateQuantity = async (itemName, itemChange) => {
     const docRef = doc(collection(firestore, "Inventory"), itemName)
     const docSnap = await getDoc(docRef)
 
     if (docSnap.exists()) {
+      //Error Handling
       if (!itemChange) {
         console.log("Error: Not all fields are filled")
         return
+
+        //Get the item and change amount and applies it to item
       } else {
         const newChange = parseInt(itemChange, 10)
         const newQuantity = parseInt(docSnap.data().quantity + newChange)
-        
+
         if (newQuantity <= 0) {
           await deleteDoc(docRef)
         } else {
-          await updateDoc(docRef, {quantity: newQuantity})
+          await updateDoc(docRef, { quantity: newQuantity })
         }
         await updateInventory()
       }
     }
   }
 
+  //Custom Theme
   const { palette } = createTheme()
   const { augmentColor } = palette
   const createColor = (mainColor) => augmentColor({ color: { main: mainColor } })
@@ -186,8 +207,8 @@ export default function Home() {
               color: 'black',
             },
             '&::-webkit-scrollbar': {
-            display: 'none',
-          },
+              display: 'none',
+            },
           },
         },
       },
@@ -217,8 +238,9 @@ export default function Home() {
         },
       },
     },
-  });  
+  });
 
+  // Open's edit mode with item values or default values
   const handleOpen = (item = null) => {
     if (item) {
       setIsEditMode(true)
@@ -234,7 +256,9 @@ export default function Home() {
       setItemMeasurement('')
     }
     setOpen(true)
-  }  
+  }
+
+  // Closes menu
   const handleClose = () => {
     setOpen(false)
     setItemName('')
@@ -246,7 +270,10 @@ export default function Home() {
     updateInventory()
   }, [])
 
+  //Material UI interface
   return (
+
+    //Custom theme applied
     <ThemeProvider theme={theme}>
       <Box
         width="100vw"
@@ -271,15 +298,16 @@ export default function Home() {
             p={4}
             display="flex"
             flexDirection="column"
-            sx={{transform: 'translate(-50%, -50%)'}}
+            sx={{ transform: 'translate(-50%, -50%)' }}
           >
+            {/* Name of item, quantity, and measurement for editing menu */}
             <Stack direction="column" alignItems="center" justifyContent="center" spacing={2}>
               <Typography fontSize="3vh">
                 {itemName.charAt(0).toUpperCase() + itemName.slice(1)}
               </Typography>
               <Stack direction="row" justifyContent="center" alignItems="center" spacing={1}>
-                <TextField label="Quantity" value={itemQuantity} onChange={(e) => setItemQuantity(e.target.value)} InputProps={{inputProps : {min: 1}}}/>
-                <TextField label="Measurement" value={itemMeasurement} onChange={(e) => setItemMeasurement(e.target.value)}/>
+                <TextField label="Quantity" value={itemQuantity} onChange={(e) => setItemQuantity(e.target.value)} InputProps={{ inputProps: { min: 1 } }} />
+                <TextField label="Measurement" value={itemMeasurement} onChange={(e) => setItemMeasurement(e.target.value)} />
               </Stack>
               <Button style={{ backgroundColor: "#CA054D" }} size="large" variant="contained" onClick={handleSaveItem}>
                 Save
@@ -287,6 +315,9 @@ export default function Home() {
             </Stack>
           </Box>
         </Modal>
+
+        
+        {/* Main page */}
         <Stack direction="column" height="100vh" width="100vw">
           {/*Header Start*/}
           <Stack direction="row" bgcolor="#3B1C32" padding={1} display="flex" justifyContent="space-between" alignItems="center">
@@ -298,25 +329,31 @@ export default function Home() {
             </Box>
           </Stack>
           {/*Header End*/}
-
-          {/* Body Start */}
+          
+          {/* Adding items */}
           <Box width="100vw" bgcolor="#A4D4B4" padding={2} display="flex" alignItems="baseline" justifyContent="center">
             <Stack direction="column" alignItems="center" justifyContent="center" spacing={2}>
               <Button style={{ backgroundColor: "#CA054D" }} padding={2} size="large" variant="contained" onClick={() => handleSaveItem()}>
                 Add Item
               </Button>
               <Stack direction="row" spacing={1}>
-                <TextField label="Item Name" value={itemName} onChange={(e) => setItemName(e.target.value)}/>
-                <TextField label="Quantity" value={itemQuantity} onChange={(e) => setItemQuantity(e.target.value)} InputProps={{inputProps : {min: 1}}}/>
-                <TextField label="Measurement" value={itemMeasurement} onChange={(e) => setItemMeasurement(e.target.value)}/>
+                <TextField label="Item Name" value={itemName} onChange={(e) => setItemName(e.target.value)} />
+                <TextField label="Quantity" value={itemQuantity} onChange={(e) => setItemQuantity(e.target.value)} InputProps={{ inputProps: { min: 1 } }} />
+                <TextField label="Measurement" value={itemMeasurement} onChange={(e) => setItemMeasurement(e.target.value)} />
               </Stack>
             </Stack>
           </Box>
+
+          {/* Body Start */}
           <Box height="100vh" bgcolor="#A4D4B4" padding={2}>
             <Stack direction="row" spacing={1}>
+
+              {/* Left section */}
               <Stack height="68vh" width="50vw" spacing={1} bgcolor="#B96D40" borderRadius={3} overflow="auto" alignItems="center" padding={2}>
-                <TextField fullWidth label="Search Item" value={searchTerm} onChange={(e)  => setSearchTerm(e.target.value)}/>
-                {filteredInventory.map(({id, name, quantity, measurement}) => (
+                
+                {/* List of items in database */}
+                <TextField fullWidth label="Search Item" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                {filteredInventory.map(({ id, name, quantity, measurement }) => (
                   <Box
                     key={id}
                     width="95%"
@@ -328,6 +365,8 @@ export default function Home() {
                     padding={3}
                     borderRadius={3}
                   >
+
+                    {/* Item name, quantity, and measurement */}
                     <Stack direction="column">
                       <Typography variant="h4" textAlign="left" fontSize="3vh">
                         {name.charAt(0).toUpperCase() + name.slice(1)}
@@ -341,33 +380,35 @@ export default function Home() {
                         </Typography>
                       </Stack>
                     </Stack>
+
+                    {/* Update item, remove, or edit */}
                     <Stack direction="row" spacing={2}>
                       <Button style={{ backgroundColor: "#CA054D" }} variant="contained" onClick={() => handleUpdateQuantity(name, change[name])}>
                         Add
                       </Button>
                       <Box width="7vw">
                         <TextField label="amount"
-                          InputProps={{inputProps: { min: 0 }}} value={change[name] || ''}
-                          onChange={(e) => setChange({...change, [name]: e.target.value})}>
+                          InputProps={{ inputProps: { min: 0 } }} value={change[name] || ''}
+                          onChange={(e) => setChange({ ...change, [name]: e.target.value })}>
                         </TextField>
                       </Box>
                       <Button style={{ backgroundColor: "#CA054D" }} variant="contained" onClick={() => handleUpdateQuantity(name, -change[name])}>
                         Remove
                       </Button>
-                      <Button style={{ backgroundColor: "#CA054D" }} variant="contained" onClick={() => handleOpen({name, quantity, measurement})}>
+                      <Button style={{ backgroundColor: "#CA054D" }} variant="contained" onClick={() => handleOpen({ name, quantity, measurement })}>
                         Edit
                       </Button>
                     </Stack>
                   </Box>
                 ))}
               </Stack>
-            
+
               {/* AI response generation */}
               <Stack height="68vh" width="50vw" spacing={1} bgcolor="#B96D40" borderRadius={3} overflow="auto" alignItems="center" padding={2}>
                 <TextField size='large' variant="outlined"
                   fullWidth
                   label="Describe what type of meal you want"
-                  value={mealDescription} onChange={(e) => setMealDescription(e.target.value)}/>
+                  value={mealDescription} onChange={(e) => setMealDescription(e.target.value)} />
                 <Button style={{ backgroundColor: "#CA054D" }} variant="contained" onClick={handleGenerateRecipes}>Generate AI Suggested Recipes</Button>
                 <Stack spacing={2}>
                   {recipes.map((recipe, index) => (
