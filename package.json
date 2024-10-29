@@ -16,7 +16,7 @@
     "@mui/material": "^5.16.7",
     "dotenv": "^16.4.5",
     "firebase": "^10.12.5",
-    "next": "14.2.5",
+    "next": "^14.2.13",
     "pantry_inventory": "file:",
     "react": "^18",
     "react-dom": "^18",
