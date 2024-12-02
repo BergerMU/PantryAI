@@ -74,17 +74,16 @@ export default function Home() {
         2.6 H3 text saying "Steps"
         2.7 bullet point list of detailed steps to inform the person how to make the dish
         3. Separate each recipe with a clear divider "---" to make them distinct.
-        4. Also if you see anything you don't reconize don't put it in the recipe
+        4. If you see anything you don't reconize don't put it in the recipe
         5. Ensure you use the right proportions of ingrediants and the right types of measurements
           for each ingredients. If a item doesn't have a certain measurement assigned to it you can
           assume what would be the most common type of measurement for that type and amount of item.
-        6. Also make sure that the portion of ingrediants are appropiate, you don't have to use all of one item if the recipe doesn't need it.`
+        6. Make sure that the portion of ingrediants are appropiate, you don't have to use all of one item if the recipe doesn't need it.`
 
     //Error handling
     try {
       const result = await model.generateContent(prompt);
       if (result.response && result.response.text) {
-        console.log(result.response.text())
         return result.response.text()
       } else {
         console.error('Error: Unexpected response structure')
