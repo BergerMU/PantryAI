@@ -413,7 +413,7 @@ export default function Home() {
                 <Button style={{ backgroundColor: "#CA054D" }} variant="contained" onClick={handleGenerateRecipes}>Generate AI Suggested Recipes</Button>
                 <Stack spacing={2}>
                   {recipes.map((recipe, index) => (
-                    <Box width= {{xs: "70vw", md:"600px"}}
+                    <Box width= {{xs: "70vw", md:"40vw"}}
                       padding={3}
                       key={index}
                       overflow="auto"
