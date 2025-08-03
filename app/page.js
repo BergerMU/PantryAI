@@ -187,7 +187,6 @@ export default function Home() {
   //Custom Theme
   const { palette } = createTheme()
   const { augmentColor } = palette
-  const createColor = (mainColor) => augmentColor({ color: { main: mainColor } })
   const theme = createTheme({
     components: {
       MuiButton: {
@@ -290,7 +289,7 @@ export default function Home() {
             position="absolute"
             top="50%"
             left="50%"
-            width="30vw"
+            width={{xs:"80vw", s:"50vw", md:"30vw"}}
             boxShadow={24}
             bgcolor="#DEC5E3"
             borderRadius={3}
@@ -332,23 +331,23 @@ export default function Home() {
           {/* Adding items */}
           <Box width="100vw" bgcolor="#A4D4B4" padding={2} display="flex" alignItems="baseline" justifyContent="center">
             <Stack direction="column" alignItems="center" justifyContent="center" spacing={2}>
-              <Button style={{ backgroundColor: "#CA054D" }} padding={2} size="large" variant="contained" onClick={() => handleSaveItem()}>
-                Add Item
-              </Button>
-              <Stack direction="row" spacing={1}>
-                <TextField label="Item Name" value={itemName} onChange={(e) => setItemName(e.target.value)} />
-                <TextField label="Quantity" value={itemQuantity} onChange={(e) => setItemQuantity(e.target.value)} InputProps={{ inputProps: { min: 1 } }} />
-                <TextField label="Measurement" value={itemMeasurement} onChange={(e) => setItemMeasurement(e.target.value)} />
-              </Stack>
+                <Button style={{ backgroundColor: "#CA054D" }} padding={2} size="large" variant="contained" onClick={() => handleSaveItem()}>
+                  Add Item
+                </Button>
+                <Stack direction="row" spacing={1}>
+                  <TextField label="Item Name" value={itemName} onChange={(e) => setItemName(e.target.value)} />
+                  <TextField label="Quantity" value={itemQuantity} onChange={(e) => setItemQuantity(e.target.value)} InputProps={{ inputProps: { min: 1 } }} />
+                  <TextField label="Measurement" value={itemMeasurement} onChange={(e) => setItemMeasurement(e.target.value)} />
+                </Stack>
             </Stack>
           </Box>
 
           {/* Body Start */}
-          <Box height="100vh" bgcolor="#A4D4B4" padding={2}>
-            <Stack direction="row" spacing={1}>
+          <Box height="fit-content" bgcolor="#A4D4B4" padding={2}>
+            <Stack direction ={{xs: "column", md: "row"}} alignItems={'center'} spacing={1}>
 
               {/* Left section */}
-              <Stack height="68vh" width="50vw" spacing={1} bgcolor="#B96D40" borderRadius={3} overflow="auto" alignItems="center" padding={2}>
+              <Stack height="68vh" width={{xs: "90vw", md: "50vw"}} spacing={1} bgcolor="#B96D40" borderRadius={3} overflow="auto" alignItems="center" padding={2}>
                 
                 {/* List of items in database */}
                 <TextField fullWidth label="Search Item" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
@@ -356,13 +355,14 @@ export default function Home() {
                   <Box
                     key={id}
                     width="95%"
-                    minHeight="10vh"
+                    minHeight="fit-content"
                     display="flex"
-                    alignItems="center"
+                    alignItems="start"
                     justifyContent="space-between"
                     bgcolor="#DEC5E3"
                     padding={3}
                     borderRadius={3}
+                    flexDirection={{xs: 'column', md: "row"}}
                   >
 
                     {/* Item name, quantity, and measurement */}
@@ -381,29 +381,31 @@ export default function Home() {
                     </Stack>
 
                     {/* Update item, remove, or edit */}
-                    <Stack direction="row" spacing={2}>
-                      <Button style={{ backgroundColor: "#CA054D" }} variant="contained" onClick={() => handleUpdateQuantity(name, change[name])}>
-                        Add
-                      </Button>
-                      <Box width="7vw">
+                    <Stack direction={{xs: "column", md: "row"}} spacing={2} alignItems='end'>
+                      <Box width={{sm: "100%", md: "7vw"}}>
                         <TextField label="amount"
                           InputProps={{ inputProps: { min: 0 } }} value={change[name] || ''}
                           onChange={(e) => setChange({ ...change, [name]: e.target.value })}>
                         </TextField>
                       </Box>
-                      <Button style={{ backgroundColor: "#CA054D" }} variant="contained" onClick={() => handleUpdateQuantity(name, -change[name])}>
-                        Remove
-                      </Button>
-                      <Button style={{ backgroundColor: "#CA054D" }} variant="contained" onClick={() => handleOpen({ name, quantity, measurement })}>
-                        Edit
-                      </Button>
+                      <stack direction='row'>
+                        <Button style={{ backgroundColor: "#CA054D" }} variant="contained" onClick={() => handleUpdateQuantity(name, change[name])}>
+                          Add
+                        </Button>
+                        <Button style={{ backgroundColor: "#CA054D" }} variant="contained" onClick={() => handleUpdateQuantity(name, -change[name])}>
+                          Remove
+                        </Button>
+                        <Button style={{ backgroundColor: "#CA054D" }} variant="contained" onClick={() => handleOpen({ name, quantity, measurement })}>
+                          Edit
+                        </Button>
+                      </stack>
                     </Stack>
                   </Box>
                 ))}
               </Stack>
 
               {/* AI response generation */}
-              <Stack height="68vh" width="50vw" spacing={1} bgcolor="#B96D40" borderRadius={3} overflow="auto" alignItems="center" padding={2}>
+              <Stack height="68vh" width={{xs: "90vw", md: "50vw"}} spacing={1} bgcolor="#B96D40" borderRadius={3} overflow="auto" alignItems="center" padding={2}>
                 <TextField size='large' variant="outlined"
                   fullWidth
                   label="Describe what type of meal you want"
