@@ -49,9 +49,10 @@ export default function Home() {
     const pantryString = Inventory.map(({ name, quantity, measurement }) => `${name} ${quantity} ${measurement}`).join(', ')
 
     //Detailed prompt along with the items we have in our inventory, along with the type of meal we want to make.
-    const prompt = `Here's a list of items I have in my pantry: ${pantryString}.
-        Here are a couple of rules I need you to follow exactly.
-        1. Here is how I want you to generate these meals
+    const prompt =
+    `Role: You are an expert chef with decades of experience
+    Task: Craft easy to make meals for the ordinary person based on the items they have in their pantry.
+    Constraints:
         1.1 suggest 3 different recipes based off of the ingredients in the pantry that are most
           similar to a ${mealDescription} type of meal.
         1.2 If the pantry has less than 4 unique items in it ensure that the recipe doesn't
@@ -60,25 +61,29 @@ export default function Home() {
           allowed to have some items that aren't in the pantry.
         1.4 If the recipe you generate has less than 5 items ensure that it uses items only found
           in the pantry, otherwise you must have at least 80% similar ingredients.
-        1.5 Ensure that there are at least 80% similar ingredients, otherwise look for another recipe.
+        1.5 Ensure that there are at least 85% similar ingredients, otherwise look for another recipe.
         1.6 Ensure that every recipe you generate is based off of an actual common recipe that someone
           would make in real life.
         1.7 Default to make the portion sizes for each meal 1-2 people unless otherwise described
           in the meal description.
+
         2.Here is my exact formatting I want you to fololow.
-        2.1 I want everything to be left aligned 
-        2.2 H2 title that has the name of the dish only
-        2.3 regular text with a description of the dish
-        2.4 H3 text saying "Ingredients"
-        2.5 bullet point list of ingrediants with the appropriate measurements
-        2.6 H3 text saying "Steps"
-        2.7 bullet point list of detailed steps to inform the person how to make the dish
+        2.1 H2 title that has the name of the dish only
+        2.2 regular text with a description of the dish
+        2.3 H3 text saying "Ingredients"
+        2.4 bullet point list of ingrediants with the appropriate measurements
+        2.5 H3 text saying "Steps"
+        2.6 bullet point list of detailed steps to inform the person how to make the dish
+        2.7 Ensure your h2 and h3 text don't have quotes around it.
+
         3. Separate each recipe with a clear divider "---" to make them distinct.
         4. If you see anything you don't reconize don't put it in the recipe
         5. Ensure you use the right proportions of ingrediants and the right types of measurements
           for each ingredients. If a item doesn't have a certain measurement assigned to it you can
           assume what would be the most common type of measurement for that type and amount of item.
-        6. Make sure that the portion of ingrediants are appropiate, you don't have to use all of one item if the recipe doesn't need it.`
+        6. Make sure that the portion of ingrediants are appropiate, you don't have to use all of one item if the recipe doesn't need it.
+    
+      Here is the user's list of items in their pantry: ${pantryString}.`
 
     //Error handling
     try {
@@ -413,7 +418,7 @@ export default function Home() {
                 <Button style={{ backgroundColor: "#CA054D" }} variant="contained" onClick={handleGenerateRecipes}>Generate AI Suggested Recipes</Button>
                 <Stack spacing={2}>
                   {recipes.map((recipe, index) => (
-                    <Box width= {{xs: "70vw", md:"40vw"}}
+                    <Box width= "100%"
                       padding={3}
                       key={index}
                       overflow="auto"
